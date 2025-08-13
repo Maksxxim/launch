@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minecraft Web Launcher</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;max-width:860px;margin:40px auto;padding:0 16px}
+    header{display:flex;justify-content:space-between;align-items:center}
+    button{padding:10px 14px;border-radius:10px;border:1px solid #ccc;cursor:pointer}
+    select,input{padding:8px;border-radius:8px;border:1px solid #ccc}
+    .row{display:flex;gap:12px;align-items:center;margin:12px 0}
+    .card{padding:16px;border:1px solid #eee;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+    pre{white-space:pre-wrap;background:#f6f8fa;padding:12px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Minecraft Web Launcher</h1>
+    {% if account %}
+      <div>Вы вошли как <b>{{ account.name }}</b></div>
+    {% else %}
+      <a href="/login"><button>Войти через Microsoft</button></a>
+    {% endif %}
+  </header>
+
+  <div class="card">
+    <div class="row">
+      <label for="version">Версия:</label>
+      <select id="version">
+        {% for v in versions %}
+          <option value="{{ v }}">{{ v }}</option>
+        {% endfor %}
+      </select>
+      <label for="ram">RAM (ГБ):</label>
+      <input id="ram" type="number" min="1" max="16" value="2" />
+      <button onclick="launch()">Запустить</button>
+    </div>
+    <pre id="status">Готов</pre>
+  </div>
+
+  <script>
+    async function launch(){
+      const version = document.getElementById('version').value;
+      const ram = parseInt(document.getElementById('ram').value||'2',10);
+      const pre = document.getElementById('status');
+      pre.textContent = 'Подготовка к запуску…';
+      try{
+        const res = await fetch('/launch', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({version, ram})});
+        const data = await res.json();
+        pre.textContent = JSON.stringify(data,null,2);
+      }catch(e){
+        pre.textContent = 'Ошибка: '+e;
+      }
+    }
+  </script>
+</body>
+</html>
